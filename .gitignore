@@ -1,0 +1,22 @@
+# .gitignore para Streamlit + Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.DS_Store
+.env
+.env.*
+.venv/
+env/
+venv/
+.ipynb_checkpoints/
+
+# Archivos temporales de sistema
+Thumbs.db
+desktop.ini
+
+# Data local si no quieres subirla
+# /data/
+
+# Archivos de configuración local
+.streamlit/secrets.toml
