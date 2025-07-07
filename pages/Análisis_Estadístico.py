@@ -26,11 +26,9 @@ Se aplican herramientas como:
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_excel("data/Datos_STOXX50_.xlsx", header=[0, 1])
-        df.columns = [(str(a), str(b)) for a, b in df.columns]
-        df[('Fecha', 'Año')] = pd.to_datetime(df[('Fecha', 'Año')], errors='coerce')
-        df.dropna(subset=[('Fecha', 'Año')], inplace=True)
-        df[('Fecha', 'Año')] = df[('Fecha', 'Año')].dt.year
+        df = pd.read_excel("data/Datos_STOXX50_.xlsx", header=0)
+        df['Año'] = pd.to_datetime(df['Año'], errors='coerce').dt.year
+        df.dropna(subset=['Año'], inplace=True)
         return df
     except Exception as e:
         st.error(f"Error al cargar datos: {e}")
@@ -40,13 +38,13 @@ def load_data():
 full_df = load_data()
 
 if not full_df.empty:
-    available_years = sorted(full_df[('Fecha', 'Año')].unique())
+    available_years = sorted(full_df['Año'].dropna().unique())
     year = st.selectbox("Selecciona el año de análisis:", options=available_years)
-    df = full_df[full_df[('Fecha', 'Año')] == year].copy()
+    df = full_df[full_df['Año'] == year].copy()
 
     # Filtro: buscar columnas ESG y financieras comunes
-    posibles_vars = [col for col in df.columns if col[0] not in ['Fecha'] and df[col].dtype in [np.float64, np.int64]]
-    vars_dict = {f"{col[0]} - {col[1]}": col for col in posibles_vars}
+    posibles_vars = [col for col in df.columns if col not in ['Año', 'Nombre', 'País', 'Sector'] and df[col].dtype in [np.float64, np.int64]]
+    vars_dict = {col: col for col in posibles_vars}
 
     # Selección de variables para análisis
     st.markdown("---")
@@ -72,8 +70,7 @@ if not full_df.empty:
 
     # Matriz de correlación
     st.subheader("🔗 Matriz de Correlación")
-    all_numeric = df[[col for col in posibles_vars]].copy()
-    corr_df = all_numeric.corr()
+    corr_df = df[posibles_vars].corr()
     fig_corr, ax = plt.subplots(figsize=(10, 6))
     sns.heatmap(corr_df, cmap="coolwarm", annot=False, fmt=".2f", ax=ax)
     st.pyplot(fig_corr)
