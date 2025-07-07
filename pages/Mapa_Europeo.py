@@ -2,20 +2,17 @@
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
-import numpy as np
-import os
 
-# Configuración inicial de la página
+# Configuración de la página
 st.set_page_config(page_title="Mapa Europeo", layout="wide")
 st.title("🗺️ Mapa 3D de Empresas del EURO STOXX 50 por País y Sector")
 
-# Explicación inicial
 st.markdown("""
-En este mapa 3D puedes explorar la distribución de las empresas del índice **EURO STOXX 50** por país y sector.
-Cada columna representa un grupo de empresas, con altura proporcional a la cantidad.
+Explora la distribución de empresas del índice **EURO STOXX 50** en Europa, agrupadas por país y sector.  
+Cada columna representa un grupo de empresas, y su altura es proporcional a la cantidad.
 """)
 
-# Diccionario de coordenadas por país (puede ser extendido si es necesario)
+# Coordenadas por país
 COORDS = {
     "Alemania": [51.1657, 10.4515],
     "Francia": [46.2276, 2.2137],
@@ -31,7 +28,7 @@ COORDS = {
 
 # Cargar datos
 @st.cache_data
-def load_df():
+def load_data():
     try:
         df = pd.read_excel("data/empresas_europeas.xlsx")
         df = df.dropna(subset=['pais', 'sector'])
@@ -40,35 +37,34 @@ def load_df():
         df = df.dropna(subset=['lat', 'lon'])
         return df
     except Exception as e:
-        st.error(f"Error al cargar datos: {e}")
+        st.error(f"Error al cargar los datos: {e}")
         return pd.DataFrame()
 
-# Cargar y validar
-df = load_df()
+df = load_data()
 
 if not df.empty:
-    # Contar empresas por combinación de país y sector
+    # Agrupar empresas por país y sector
     grouped = df.groupby(['pais', 'sector', 'lat', 'lon']).agg({'empresa': 'count'}).reset_index()
     grouped = grouped.rename(columns={'empresa': 'n_empresas'})
 
-    # Generar colores automáticos por sector
+    # Colores automáticos por sector
     sectores = grouped['sector'].unique()
     colores = {
-        sector: [int((i * 50) % 255), int((i * 80) % 255), int((i * 110) % 255), 200]
+        sector: [int((i * 47) % 255), int((i * 91) % 255), int((i * 123) % 255), 200]
         for i, sector in enumerate(sectores)
     }
     grouped['color'] = grouped['sector'].map(colores)
 
-    # Ajuste de altura para visualización
+    # Altura proporcional
     grouped['height'] = grouped['n_empresas'] * 10000
 
-    # Mostrar controles
+    # Sidebar - controles de visualización
     with st.sidebar:
-        st.header("Opciones de visualización")
+        st.header("⚙️ Opciones de visualización")
         scale = st.slider("Altura de columnas", 0.5, 5.0, 1.0, step=0.1)
         radius = st.slider("Radio de agrupación", 5000, 25000, 10000, step=1000)
 
-    # Definir capa
+    # Definir capa del mapa
     layer = pdk.Layer(
         "ColumnLayer",
         data=grouped,
@@ -83,20 +79,15 @@ if not df.empty:
     )
 
     # Vista inicial
-    view_state = pdk.ViewState(
-        latitude=50,
-        longitude=10,
-        zoom=3.5,
-        pitch=45
-    )
+    view_state = pdk.ViewState(latitude=50, longitude=10, zoom=3.5, pitch=45)
 
-    # Tooltip para mostrar detalle al pasar el cursor
+    # Tooltip
     tooltip = {
         "html": "<b>País:</b> {pais}<br/><b>Sector:</b> {sector}<br/><b>Empresas:</b> {n_empresas}",
         "style": {"backgroundColor": "#1e1e1e", "color": "white"}
     }
 
-    # Renderizar mapa
+    # Mostrar mapa
     st.pydeck_chart(pdk.Deck(
         layers=[layer],
         initial_view_state=view_state,
@@ -104,14 +95,19 @@ if not df.empty:
         map_style="mapbox://styles/mapbox/light-v9"
     ))
 
-    # Mostrar tablas de resumen
+    # Tablas resumen
     col1, col2 = st.columns(2)
     with col1:
-        st.subheader("🏢 Empresas por País")
-        st.dataframe(df.groupby('pais').size().reset_index(name='Nº Empresas').sort_values('Nº Empresas', ascending=False))
+        st.subheader("📍 Empresas por País")
+        st.dataframe(
+            df.groupby('pais').size().reset_index(name='Nº Empresas').sort_values('Nº Empresas', ascending=False),
+            use_container_width=True
+        )
     with col2:
         st.subheader("🏭 Empresas por Sector")
-        st.dataframe(df.groupby('sector').size().reset_index(name='Nº Empresas').sort_values('Nº Empresas', ascending=False))
-
+        st.dataframe(
+            df.groupby('sector').size().reset_index(name='Nº Empresas').sort_values('Nº Empresas', ascending=False),
+            use_container_width=True
+        )
 else:
     st.warning("No se encontraron datos válidos para el mapa.")
