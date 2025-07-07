@@ -3,57 +3,50 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-st.set_page_config(layout="wide")
+st.set_page_config(page_title="Dashboard KPIs", layout="wide")
+
+# Título
+st.title("📊 Evolución de KPIs de RACE IM")
+
+st.markdown("""
+Este dashboard muestra la evolución temporal de indicadores financieros y de sostenibilidad (ESG) de la empresa **RACE IM**, perteneciente al EURO STOXX 50.
+""")
 
 # Cargar datos
 @st.cache_data
 def load_data():
-    return pd.read_excel("data/Datos_STOXX50_.xlsx")
+    df = pd.read_excel("data/Datos_STOXX50_.xlsx", sheet_name="Financiero")
+    df["Fecha"] = pd.to_datetime(df["Dates"], errors='coerce')
+    df.dropna(subset=["Fecha"], inplace=True)
+    df["Año"] = df["Fecha"].dt.year
+    return df
 
 df = load_data()
 
-# Título de la página
-st.title("📊 Dashboard Dinámico de KPIs")
+# Diccionario de métricas con nombres legibles
+kpi_map = {
+    "P/E Ratio": "RACE IM  ",
+    "Dividendos por Acción": "RACE IM  .4",
+    "ROE (%)": "RACE IM  .6",
+    "ROI (%)": "RACE IM  .7",
+    "Rentabilidad sobre el Capital (simulada)": "RACE IM  .8",
+    "Volatilidad": "RACE IM  .9",
+    "Medioambiente (E)": "RACE IM  .10",
+    "Social (S)": "RACE IM  .11",
+    "Gobernanza (G)": "RACE IM  .13"
+}
 
-st.markdown("""
-Personaliza el análisis seleccionando los indicadores clave (KPIs) que más te interesen. 
-Puedes comparar empresas, países o sectores de forma visual e interactiva.
-""")
+kpi_seleccionado = st.selectbox("Selecciona el KPI que deseas visualizar:", list(kpi_map.keys()))
 
-# Opciones disponibles
-kpi_disponibles = ["Crecimiento", "Rentabilidad", "Valoración", "Apalancamiento", "E", "S", "G"]
-agrupaciones = ["Nombre", "País", "Sector"]
+columna = kpi_map[kpi_seleccionado]
 
-# Selecciones del usuario
-col1, col2 = st.columns(2)
-
-with col1:
-    kpi_seleccionado = st.selectbox("Selecciona el KPI a visualizar:", kpi_disponibles)
-
-with col2:
-    agrupacion = st.selectbox("Agrupar por:", agrupaciones)
-
-# Verificar si las columnas existen antes de agrupar
-if agrupacion not in df.columns or kpi_seleccionado not in df.columns:
-    st.error("La columna seleccionada no se encuentra en los datos.")
+if columna not in df.columns:
+    st.warning("La métrica seleccionada no está disponible para esta empresa.")
 else:
-    # Calcular promedio por agrupación
-    df_grouped = df.groupby(agrupacion)[kpi_seleccionado].mean().reset_index()
+    df_kpi = df[["Año", columna]].dropna().sort_values("Año")
+    st.line_chart(df_kpi.set_index("Año"), use_container_width=True)
 
-    # Gráfico de barras horizontal
-    fig = px.bar(
-        df_grouped,
-        x=kpi_seleccionado,
-        y=agrupacion,
-        orientation='h',
-        color=kpi_seleccionado,
-        color_continuous_scale='Blues',
-        title=f"{kpi_seleccionado} promedio por {agrupacion}"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
-
-    # Mostrar tabla de datos
     st.markdown("---")
-    st.subheader("📋 Datos detallados")
-    st.dataframe(df_grouped.sort_values(kpi_seleccionado, ascending=False).round(2))
+    st.subheader("📋 Valores históricos del KPI seleccionado")
+    st.dataframe(df_kpi.rename(columns={columna: kpi_seleccionado}).reset_index(drop=True).round(2))
+
