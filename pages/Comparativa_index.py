@@ -19,17 +19,15 @@ Se analizan métricas promedio por categoría, mostrando si las Top 5 realmente 
 @st.cache_data
 def cargar_resultados():
     try:
-        df = pd.read_excel("data/Datos_STOXX50_.xlsx", header=[0, 1])
-        df.columns = [(str(a), str(b)) for a, b in df.columns]  # estandarizar columnas
-        df[('Fecha', 'Año')] = pd.to_datetime(df[('Fecha', 'Año')], errors='coerce')
-        df.dropna(subset=[('Fecha', 'Año')], inplace=True)
-        df[('Fecha', 'Año')] = df[('Fecha', 'Año')].dt.year
+        df = pd.read_excel("data/Datos_STOXX50_.xlsx", header=0)
+        df['Año'] = pd.to_datetime(df['Año'], errors='coerce').dt.year
+        df.dropna(subset=['Año'], inplace=True)
         return df
     except Exception as e:
         st.error(f"Error al cargar los datos: {e}")
         return pd.DataFrame()
 
-# Diccionario con categorías y métricas (igual que en Top 5)
+# Diccionario con categorías y métricas
 CATEGORIAS = {
     'Crecimiento': ['Revenue', 'EPS'],
     'Rentabilidad': ['ROE', 'EBITDA Margin'],
@@ -42,22 +40,21 @@ CATEGORIAS = {
 df = cargar_resultados()
 
 if not df.empty:
-    # Obtener tickers y años
-    tickers = sorted(set([col[0] for col in df.columns if col[0] != 'Fecha']))
-    available_years = sorted(df[('Fecha', 'Año')].dropna().unique())
+    available_years = sorted(df['Año'].dropna().unique())
     year = st.selectbox("Selecciona un año para la comparación:", options=available_years)
-    df_year = df[df[('Fecha', 'Año')] == year]
+    df_year = df[df['Año'] == year]
 
-    # Seleccionar las top 5 del año (según alguna métrica sencilla para ejemplo)
+    # Obtener todas las empresas
+    empresas = df_year['Nombre'].dropna().unique().tolist()
     resumen_empresas = {}
-    for categoria, metricas in CATEGORIAS.items():
-        for metrica in metricas:
-            for ticker in tickers:
-                columnas = [col for col in df_year.columns if col[0] == ticker and metrica in col[1]]
-                for col in columnas:
-                    if ticker not in resumen_empresas:
-                        resumen_empresas[ticker] = {}
-                    resumen_empresas[ticker][f"{categoria} - {metrica}"] = df_year[col].mean()
+
+    for empresa in empresas:
+        resumen_empresas[empresa] = {}
+        df_empresa = df_year[df_year['Nombre'] == empresa]
+        for categoria, metricas in CATEGORIAS.items():
+            for metrica in metricas:
+                if metrica in df_empresa.columns:
+                    resumen_empresas[empresa][f"{categoria} - {metrica}"] = df_empresa[metrica].mean()
 
     # Convertir a DataFrame
     resumen_df = pd.DataFrame(resumen_empresas).T.dropna(axis=1, how='all')
@@ -65,7 +62,7 @@ if not df.empty:
     # Calcular promedio general del índice
     promedio_index = resumen_df.mean()
 
-    # Simular selección de Top 5 (en práctica deberíamos importar del módulo anterior)
+    # Selección Top 5 (simulada)
     top5 = resumen_df.sum(axis=1).sort_values(ascending=False).head(5).index.tolist()
     top5_df = resumen_df.loc[top5]
 
