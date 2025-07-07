@@ -33,23 +33,27 @@ with col1:
 with col2:
     agrupacion = st.selectbox("Agrupar por:", agrupaciones)
 
-# Calcular promedio si es por país o sector
-df_grouped = df.groupby(agrupacion)[kpi_seleccionado].mean().reset_index()
+# Verificar si las columnas existen antes de agrupar
+if agrupacion not in df.columns or kpi_seleccionado not in df.columns:
+    st.error("La columna seleccionada no se encuentra en los datos.")
+else:
+    # Calcular promedio por agrupación
+    df_grouped = df.groupby(agrupacion)[kpi_seleccionado].mean().reset_index()
 
-# Gráfico de barras
-fig = px.bar(
-    df_grouped,
-    x=kpi_seleccionado,
-    y=agrupacion,
-    orientation='h',
-    color=kpi_seleccionado,
-    color_continuous_scale='Blues',
-    title=f"{kpi_seleccionado} promedio por {agrupacion}"
-)
+    # Gráfico de barras horizontal
+    fig = px.bar(
+        df_grouped,
+        x=kpi_seleccionado,
+        y=agrupacion,
+        orientation='h',
+        color=kpi_seleccionado,
+        color_continuous_scale='Blues',
+        title=f"{kpi_seleccionado} promedio por {agrupacion}"
+    )
 
-st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
-# Mostrar tabla con los valores
-st.markdown("---")
-st.subheader("📋 Datos detallados")
-st.dataframe(df_grouped.sort_values(kpi_seleccionado, ascending=False).round(2))
+    # Mostrar tabla de datos
+    st.markdown("---")
+    st.subheader("📋 Datos detallados")
+    st.dataframe(df_grouped.sort_values(kpi_seleccionado, ascending=False).round(2))
