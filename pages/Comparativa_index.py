@@ -1,98 +1,76 @@
-# 2_📈_Comparativa_Index.py
+# 2_📈_Comparativa_RACE_IM_vs_Index.py
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
-# Configuración inicial de la página
+# Configuración inicial
 st.set_page_config(page_title="Comparativa con el Índice", layout="wide")
-st.title("📈 Comparativa entre las Top 5 Acciones y el EURO STOXX 50")
+st.title("📈 Comparativa entre RACE IM y el Promedio del EURO STOXX 50")
 
-# Introducción explicativa para contextualizar esta sección
 st.markdown("""
-Esta sección permite comparar las **5 mejores acciones seleccionadas** frente al conjunto total del índice EURO STOXX 50. 
+Esta sección compara las métricas clave de la empresa **RACE IM** frente al **promedio del índice EURO STOXX 50**.
 
-Se analizan métricas promedio por categoría, mostrando si las Top 5 realmente superan al índice de forma significativa o no.
+Se analizan dimensiones como **rentabilidad**, **dividendos**, **valoración** y **ESG**.
 """)
 
-# Cargar los resultados previamente calculados
+# Cargar datos simulados
 @st.cache_data
-def cargar_resultados():
-    try:
-        df = pd.read_excel("data/Datos_STOXX50_.xlsx", header=0)
-        df['Año'] = pd.to_datetime(df['Año'], errors='coerce').dt.year
-        df.dropna(subset=['Año'], inplace=True)
-        return df
-    except Exception as e:
-        st.error(f"Error al cargar los datos: {e}")
-        return pd.DataFrame()
+def cargar_datos():
+    df = pd.read_excel("data/Datos_STOXX50_.xlsx", sheet_name="Financiero")
+    df["Fecha"] = pd.to_datetime(df["Dates"], errors='coerce')
+    df.dropna(subset=["Fecha"], inplace=True)
+    df["Año"] = df["Fecha"].dt.year
+    df["ESG"] = df[["RACE IM  .10", "RACE IM  .13"]].mean(axis=1)
+    return df
 
-# Diccionario con categorías y métricas
-CATEGORIAS = {
-    'Crecimiento': ['Revenue', 'EPS'],
-    'Rentabilidad': ['ROE', 'EBITDA Margin'],
-    'Valoración': ['P/E Ratio'],
-    'Apalancamiento': ['WACC'],
-    'ESG': ['ESG Score', 'Governance Score']
+df = cargar_datos()
+
+# Diccionario con métricas relevantes
+METRICAS = {
+    "Dividendos": "RACE IM  .4",
+    "ROE": "RACE IM  .6",
+    "ROI": "RACE IM  .7",
+    "Valoración (P/E)": "RACE IM  ",
+    "ESG": "ESG"
 }
 
-# Cargar los datos
-df = cargar_resultados()
+# Años disponibles
+años = sorted(df["Año"].unique())
+año_sel = st.selectbox("Selecciona un año:", años)
+df_year = df[df["Año"] == año_sel]
 
-if not df.empty:
-    available_years = sorted(df['Año'].dropna().unique())
-    year = st.selectbox("Selecciona un año para la comparación:", options=available_years)
-    df_year = df[df['Año'] == year]
+# Calcular valores
+valores_race = {}
+valores_index = {}
 
-    # Obtener todas las empresas
-    empresas = df_year['Nombre'].dropna().unique().tolist()
-    resumen_empresas = {}
+for etiqueta, columna in METRICAS.items():
+    if columna in df.columns:
+        valores_race[etiqueta] = df_year[columna].values[0]  # Solo una fila = RACE IM
+        valores_index[etiqueta] = df_year[columna].mean()     # Promedio general
 
-    for empresa in empresas:
-        resumen_empresas[empresa] = {}
-        df_empresa = df_year[df_year['Nombre'] == empresa]
-        for categoria, metricas in CATEGORIAS.items():
-            for metrica in metricas:
-                if metrica in df_empresa.columns:
-                    resumen_empresas[empresa][f"{categoria} - {metrica}"] = df_empresa[metrica].mean()
+# Crear DataFrame comparativo
+comparativa = pd.DataFrame({
+    "Métrica": list(METRICAS.keys()),
+    "RACE IM": list(valores_race.values()),
+    "EURO STOXX 50": list(valores_index.values())
+})
+comparativa["Diferencia %"] = 100 * (comparativa["RACE IM"] - comparativa["EURO STOXX 50"]) / comparativa["EURO STOXX 50"]
 
-    # Convertir a DataFrame
-    resumen_df = pd.DataFrame(resumen_empresas).T.dropna(axis=1, how='all')
+# Mostrar tabla
+st.subheader("📊 Comparativa por Métrica")
+st.dataframe(comparativa.round(2), use_container_width=True)
 
-    # Calcular promedio general del índice
-    promedio_index = resumen_df.mean()
+# Gráfico de comparación
+fig = go.Figure()
+fig.add_trace(go.Bar(x=comparativa["Métrica"], y=comparativa["EURO STOXX 50"], name="EURO STOXX 50", marker_color="gray"))
+fig.add_trace(go.Bar(x=comparativa["Métrica"], y=comparativa["RACE IM"], name="RACE IM", marker_color="darkblue"))
+fig.update_layout(barmode='group', xaxis_title="Métrica", yaxis_title="Valor", title="Comparativa entre RACE IM y el índice")
+st.plotly_chart(fig, use_container_width=True)
 
-    # Selección Top 5 (simulada)
-    top5 = resumen_df.sum(axis=1).sort_values(ascending=False).head(5).index.tolist()
-    top5_df = resumen_df.loc[top5]
+# Gráfico de diferencia porcentual
+fig2 = px.bar(comparativa, x="Métrica", y="Diferencia %", color="Diferencia %", color_continuous_scale="Blues",
+              title="Diferencia porcentual RACE IM vs EURO STOXX 50")
+fig2.update_traces(texttemplate='%{y:.2f}%', textposition='outside')
+st.plotly_chart(fig2, use_container_width=True)
 
-    # Promedio Top 5
-    promedio_top5 = top5_df.mean()
-
-    # Comparación visual
-    comparativa = pd.DataFrame({
-        'Top 5': promedio_top5,
-        'STOXX 50': promedio_index
-    })
-    comparativa['Diferencia %'] = 100 * (comparativa['Top 5'] - comparativa['STOXX 50']) / comparativa['STOXX 50']
-    comparativa = comparativa.reset_index().rename(columns={'index': 'Métrica'})
-
-    # Mostrar tabla
-    st.subheader("📊 Comparación de Promedios por Métrica")
-    st.dataframe(comparativa, use_container_width=True)
-
-    # Gráfico de barras
-    fig = go.Figure()
-    fig.add_trace(go.Bar(x=comparativa['Métrica'], y=comparativa['STOXX 50'], name='STOXX 50', marker_color='lightgray'))
-    fig.add_trace(go.Bar(x=comparativa['Métrica'], y=comparativa['Top 5'], name='Top 5', marker_color='darkblue'))
-    fig.update_layout(barmode='group', xaxis_title='Métrica', yaxis_title='Valor Promedio')
-    st.plotly_chart(fig, use_container_width=True)
-
-    # Gráfico de mejora porcentual
-    fig2 = px.bar(comparativa, x='Métrica', y='Diferencia %', color='Diferencia %', color_continuous_scale='Blues',
-                  title='Diferencia porcentual: Top 5 vs STOXX 50')
-    fig2.update_traces(texttemplate='%{y:.2f}%', textposition='outside')
-    st.plotly_chart(fig2, use_container_width=True)
-
-else:
-    st.warning("No se pudieron cargar datos para mostrar comparación.")
