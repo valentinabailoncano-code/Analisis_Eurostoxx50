@@ -62,6 +62,21 @@ Usa el menú lateral izquierdo para explorar todas las funcionalidades. A contin
 #### 📉 Análisis Estadístico
 > Página donde se aplican técnicas estadísticas reales aprendidas en el máster: histogramas, tests de hipótesis, correlaciones entre métricas ESG y financieras, y regresiones simples. Se puede filtrar por sector o país para exploración avanzada.
 
+#### 🎯 Simulador de Inversión Ética
+> Elige tus prioridades (ESG vs. financiero), tu nivel de riesgo y sector deseado. El sistema recomienda automáticamente 3 empresas ideales.
+
+#### 📊 Dashboard de KPIs
+> Compara cualquier KPI entre empresas, países o sectores. Visualización interactiva y control total del análisis.
+
+#### 📈 Ranking ESG Histórico
+> Explora cómo ha evolucionado el desempeño ESG de las empresas en los últimos años. Datos simulados.
+
+#### 🤖 Consulta con Empresas
+> Introduce preguntas tipo “mejor empresa en ESG en Alemania” y el sistema filtra automáticamente los resultados.
+
+#### 🌍 Comparativa de Índices
+> Compara el EURO STOXX 50 con el IBEX 35 y el S&P 500 en rentabilidad, valoración, apalancamiento y ESG.
+
 #### 🙋‍♀️ Sobre mí
 > Espacio personal donde explico quién soy, qué me motivó a desarrollar este proyecto y cómo contactarme profesionalmente. Incluye imagen, bio, idiomas y enlace directo a LinkedIn.
 """)
