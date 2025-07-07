@@ -2,90 +2,88 @@
 import streamlit as st
 from PIL import Image
 
-# Configuración general de la página principal de la app
+# Configuración general
 st.set_page_config(
     page_title="EURO STOXX 50 - Proyecto Valentina",
     page_icon="📈",
     layout="wide"
 )
 
-# Mostrar el logo de Evolve al inicio
+# Mostrar logo de Evolve
 logo = Image.open("images/evolve_logo.png")
 st.image(logo, width=200)
 
-# Título principal del proyecto
+# Título principal
 st.title("📈 Análisis Integral del EURO STOXX 50")
 
-# Descripción general del proyecto y contexto
+# Descripción general
 st.markdown("""
 Este proyecto ha sido desarrollado por **Valentina Bailón Cano** como parte del Módulo 1 del Máster en Data Science & IA en **Evolve**.
 
-A lo largo de este trabajo se realiza un análisis exhaustivo del índice **EURO STOXX 50**, combinando:
-- Indicadores financieros clave (crecimiento, rentabilidad, valoración, apalancamiento).
-- Métricas de sostenibilidad ESG (Environmental, Social & Governance).
-- Análisis estadístico aplicado (distribuciones, correlaciones, inferencia).
+Se analiza el índice **EURO STOXX 50** combinando:
+- Indicadores financieros clave (crecimiento, rentabilidad, valoración, apalancamiento)
+- Métricas ESG (Environmental, Social & Governance)
+- Herramientas estadísticas reales (correlaciones, regresión, hipótesis)
 
-El objetivo principal es **identificar las mejores oportunidades de inversión** dentro del índice, equilibrando rendimiento financiero con responsabilidad corporativa y sostenibilidad. Esto permite no solo tomar decisiones rentables, sino también éticas y alineadas con los criterios más exigentes del entorno económico y regulatorio actual.
+El objetivo: **identificar oportunidades de inversión éticas y rentables** con visualizaciones claras y análisis automatizado.
 
-Este proyecto no solo responde a criterios cuantitativos, sino que también busca representar buenas prácticas de visualización de datos, organización modular en Streamlit y preparación para despliegue profesional (GitHub y Streamlit Cloud).
+Este proyecto también destaca por su estructura modular, profesional y lista para despliegue en GitHub y Streamlit Cloud.
 """)
 
-# Sección: Motivación personal
+# Motivación personal
 st.markdown("""
 ---
 ### ¿Por qué el EURO STOXX 50?
-El EURO STOXX 50 es uno de los índices bursátiles más representativos de Europa. Aglutina 50 de las empresas más grandes y líquidas de la zona euro, abarcando sectores diversos como tecnología, energía, consumo, finanzas y salud.
+Este índice representa a las 50 mayores empresas de la eurozona. Analizarlo:
+- Permite trabajar con datos financieros reales y diversos
+- Une métricas de rendimiento con sostenibilidad corporativa
+- Refuerza habilidades en visualización, análisis y desarrollo profesional
 
-Analizar este índice representa una oportunidad de:
-- Explorar datos reales y complejos del entorno financiero europeo.
-- Aplicar técnicas de analítica de datos y sostenibilidad.
-- Desarrollar una app con criterios profesionales y prácticos.
-
-Este proyecto me ha permitido integrar todo lo aprendido en el máster hasta ahora, desde programación en Python hasta estadística aplicada, visualización y buenas prácticas de ingeniería de datos.
+Este proyecto refleja mi aprendizaje aplicado hasta ahora en el máster.
 """)
 
-# Sección: Guía de navegación por secciones
+# Guía de navegación
 st.markdown("""
 ---
-### Navegación del Proyecto
-Usa el menú lateral izquierdo para explorar todas las funcionalidades. A continuación, se presenta una descripción ampliada de cada módulo:
+### 🧭 Navegación del Proyecto
+Explora cada sección desde el menú lateral. A continuación, un resumen de funcionalidades:
 
 #### 📊 Top 5 Acciones
-> Sistema automatizado de puntuación multicriterio que selecciona las cinco mejores empresas del índice. Utiliza métricas ponderadas de crecimiento, rentabilidad, valoración, apalancamiento y ESG. El resultado es una tabla y gráficos dinámicos.
+Modelo de puntuación multicriterio que selecciona las 5 mejores empresas del índice combinando métricas financieras y ESG.
 
 #### 📈 Comparativa con el Índice
-> Compara estadísticamente las Top 5 frente al total del índice STOXX50. Se muestran diferencias porcentuales por categoría, y gráficos de barras para observar fortalezas relativas.
+Compara las Top 5 frente al promedio del EURO STOXX 50. Visualiza diferencias por KPI y en porcentaje.
 
 #### 🗺️ Mapa Europeo
-> Visualización geográfica 3D donde cada país representa las empresas que lo integran. Se utiliza PyDeck para ilustrar densidad de empresas y diversidad sectorial. Incluye leyenda, filtros y análisis textual del panorama económico europeo.
+Visualización 3D interactiva que muestra la distribución geográfica y sectorial de las empresas del índice.
 
 #### 📉 Análisis Estadístico
-> Página donde se aplican técnicas estadísticas reales aprendidas en el máster: histogramas, tests de hipótesis, correlaciones entre métricas ESG y financieras, y regresiones simples. Se puede filtrar por sector o país para exploración avanzada.
+Explora correlaciones, distribuciones, regresión y pruebas estadísticas aplicadas a métricas ESG y financieras.
 
 #### 🎯 Simulador de Inversión Ética
-> Elige tus prioridades (ESG vs. financiero), tu nivel de riesgo y sector deseado. El sistema recomienda automáticamente 3 empresas ideales.
+Configura tus preferencias ESG, nivel de riesgo y sector deseado. El sistema recomienda 3 empresas personalizadas.
 
 #### 📊 Dashboard de KPIs
-> Compara cualquier KPI entre empresas, países o sectores. Visualización interactiva y control total del análisis.
+Compara cualquier KPI por empresa, país o sector con gráficos dinámicos.
 
 #### 📈 Ranking ESG Histórico
-> Explora cómo ha evolucionado el desempeño ESG de las empresas en los últimos años. Datos simulados.
+Visualiza la evolución simulada del rendimiento ESG a lo largo del tiempo.
 
 #### 🤖 Consulta con Empresas
-> Introduce preguntas tipo “mejor empresa en ESG en Alemania” y el sistema filtra automáticamente los resultados.
+Haz preguntas tipo "mejor empresa de salud con baja deuda" y recibe una respuesta automática basada en filtros inteligentes.
 
 #### 🌍 Comparativa de Índices
-> Compara el EURO STOXX 50 con el IBEX 35 y el S&P 500 en rentabilidad, valoración, apalancamiento y ESG.
+Compara el EURO STOXX 50 con el IBEX 35 y S&P 500 en rendimiento, valoración y sostenibilidad.
 
 #### 🙋‍♀️ Sobre mí
-> Espacio personal donde explico quién soy, qué me motivó a desarrollar este proyecto y cómo contactarme profesionalmente. Incluye imagen, bio, idiomas y enlace directo a LinkedIn.
+Descubre quién soy, por qué hice este proyecto y cómo puedes contactarme. Incluye bio y enlace a mi LinkedIn.
 """)
 
-# Mensaje de bienvenida destacado al pie de la portada
+# Mensaje final destacado
 st.success("¡Bienvenida a la herramienta de análisis del EURO STOXX 50 desarrollada por Valentina Bailón Cano!")
 
-# Cierre con agradecimiento
+# Cierre
 st.markdown("""
 ---
-¿Quieres saber más sobre cómo se desarrolló esta app? Explora el código fuente en GitHub o consulta la documentación interna en cada sección. ¡Gracias por visitar!
+¿Quieres saber más? Explora el código en GitHub o consulta cada sección de la app. ¡Gracias por tu visita!
 """)
