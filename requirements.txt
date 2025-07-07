@@ -7,4 +7,4 @@ scipy==1.11.3
 plotly==5.22.0
 pydeck==0.8.0
 openpyxl==3.1.2
-pillow==10.1.0
+pillow==9.5.0
