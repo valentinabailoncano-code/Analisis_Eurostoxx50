@@ -7,94 +7,90 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-# Configuración de la página
+# Configuración
 st.set_page_config(page_title="Análisis Estadístico", layout="wide")
-st.title("📉 Análisis Estadístico sobre Empresas del EURO STOXX 50")
+st.title("📉 Análisis Estadístico de RACE IM")
 
-# Descripción introductoria
 st.markdown("""
-En esta sección se exploran **relaciones estadísticas** entre métricas ESG y financieras.
+En esta sección se exploran **relaciones estadísticas** entre las métricas financieras y sostenibles de **RACE IM** a lo largo del tiempo.
 
 Se aplican herramientas como:
-- Histogramas de distribución.
-- Matriz de correlación.
-- Regresión lineal simple.
-- Pruebas de hipótesis estadísticas.
+- Histogramas
+- Regresión lineal
+- Correlaciones entre variables
 """)
 
-# Cargar datos procesados
+# Cargar datos simulados de RACE IM
 @st.cache_data
 def load_data():
     try:
-        df = pd.read_excel("data/Datos_STOXX50_.xlsx", header=0)
-        df['Año'] = pd.to_datetime(df['Año'], errors='coerce').dt.year
-        df.dropna(subset=['Año'], inplace=True)
+        df = pd.read_excel("data/Datos_STOXX50_.xlsx", sheet_name="Financiero")
+        df["Fecha"] = pd.to_datetime(df["Dates"], errors='coerce')
+        df.dropna(subset=["Fecha"], inplace=True)
+        df["Año"] = df["Fecha"].dt.year
+        df["ESG"] = df[["RACE IM  .10", "RACE IM  .13"]].mean(axis=1)
         return df
     except Exception as e:
-        st.error(f"Error al cargar datos: {e}")
+        st.error(f"Error al cargar los datos: {e}")
         return pd.DataFrame()
 
-# Cargar
-full_df = load_data()
+df = load_data()
 
-if not full_df.empty:
-    available_years = sorted(full_df['Año'].dropna().unique())
-    year = st.selectbox("Selecciona el año de análisis:", options=available_years)
-    df = full_df[full_df['Año'] == year].copy()
+# Selección de año (para filtrar si se desea)
+años = sorted(df["Año"].unique())
+año_sel = st.selectbox("Selecciona un año para análisis:", options=["Todos"] + años)
 
-    # Filtro: buscar columnas ESG y financieras comunes
-    posibles_vars = [col for col in df.columns if col not in ['Año', 'Nombre', 'País', 'Sector'] and df[col].dtype in [np.float64, np.int64]]
-    vars_dict = {col: col for col in posibles_vars}
+if año_sel != "Todos":
+    df = df[df["Año"] == año_sel]
 
-    # Selección de variables para análisis
-    st.markdown("---")
-    var_x = st.selectbox("Variable X (independiente)", options=vars_dict.keys())
-    var_y = st.selectbox("Variable Y (dependiente)", options=vars_dict.keys(), index=1)
+# Variables disponibles
+variables = {
+    "Dividendos": "RACE IM  .4",
+    "ROE": "RACE IM  .6",
+    "ROI": "RACE IM  .7",
+    "P/E Ratio": "RACE IM  ",
+    "ESG Score": "ESG"
+}
 
-    col_x = vars_dict[var_x]
-    col_y = vars_dict[var_y]
+# Selección de variables para análisis
+col1, col2 = st.columns(2)
+with col1:
+    var_x = st.selectbox("Variable X (independiente)", list(variables.keys()))
+with col2:
+    var_y = st.selectbox("Variable Y (dependiente)", list(variables.keys()), index=1)
 
-    # Crear DataFrame limpio para análisis
-    df_simple = df[[col_x, col_y]].dropna()
+# Crear DataFrame para análisis
+if variables[var_x] in df.columns and variables[var_y] in df.columns:
+    df_simple = df[[variables[var_x], variables[var_y]]].dropna()
     df_simple.columns = ['X', 'Y']
 
-    # Mostrar distribuciones
-    st.subheader("📊 Histogramas")
-    col1, col2 = st.columns(2)
-    with col1:
-        fig1 = px.histogram(df_simple, x='X', nbins=20, title=f'Distribución de {var_x}')
-        st.plotly_chart(fig1, use_container_width=True)
-    with col2:
-        fig2 = px.histogram(df_simple, x='Y', nbins=20, title=f'Distribución de {var_y}')
-        st.plotly_chart(fig2, use_container_width=True)
+    # Histogramas
+    st.subheader("📊 Distribuciones")
+    c1, c2 = st.columns(2)
+    with c1:
+        st.plotly_chart(px.histogram(df_simple, x="X", nbins=10, title=f"Distribución de {var_x}"), use_container_width=True)
+    with c2:
+        st.plotly_chart(px.histogram(df_simple, x="Y", nbins=10, title=f"Distribución de {var_y}"), use_container_width=True)
 
-    # Matriz de correlación
-    st.subheader("🔗 Matriz de Correlación")
-    corr_df = df[posibles_vars].corr()
-    fig_corr, ax = plt.subplots(figsize=(10, 6))
-    sns.heatmap(corr_df, cmap="coolwarm", annot=False, fmt=".2f", ax=ax)
-    st.pyplot(fig_corr)
+    # Correlación simple
+    corr_val = df_simple.corr().iloc[0, 1]
+    st.subheader("🔗 Correlación de Pearson")
+    st.write(f"**Coeficiente de correlación (r):** {corr_val:.4f}")
 
-    # Regresión lineal simple
-    st.subheader("📐 Regresión Lineal Simple")
+    # Regresión lineal
+    st.subheader("📐 Regresión Lineal")
     slope, intercept, r_value, p_value, std_err = stats.linregress(df_simple['X'], df_simple['Y'])
-    df_simple['Pred'] = intercept + slope * df_simple['X']
-    r2 = r_value ** 2
+    df_simple["Pred"] = intercept + slope * df_simple["X"]
 
-    # Mostrar resultados
-    st.markdown(f"**Ecuación estimada:**  Y = {intercept:.3f} + {slope:.3f}·X")
-    st.markdown(f"**R² =** {r2:.4f}  |  **p-valor =** {p_value:.4e}")
+    st.markdown(f"**Ecuación:** Y = {intercept:.3f} + {slope:.3f}·X")
+    st.markdown(f"**R² =** {r_value**2:.4f} | **p-valor =** {p_value:.4e}")
 
-    # Gráfico con predicción
-    fig3 = px.scatter(df_simple, x='X', y='Y', trendline="ols",
-                      title=f'Regresión entre {var_x} y {var_y}')
-    st.plotly_chart(fig3, use_container_width=True)
+    fig = px.scatter(df_simple, x="X", y="Y", trendline="ols", title="Regresión lineal")
+    st.plotly_chart(fig, use_container_width=True)
 
-    # Interpretación textual
+    # Interpretación
     st.markdown("""
-    > 🔍 **Interpretación:** Si el valor de R² es cercano a 1 y el p-valor es menor a 0.05,
-    se puede considerar que existe una relación estadísticamente significativa entre las variables.
+    > 🔍 **Nota:** Si el p-valor es menor a 0.05 y R² es alto, la relación entre las variables podría ser significativa.
     """)
-
 else:
-    st.warning("No hay datos válidos para análisis en este año.")
+    st.warning("Las variables seleccionadas no están disponibles.")
