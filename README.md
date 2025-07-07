@@ -20,8 +20,7 @@ Visualización 3D de las empresas por país y sector usando **PyDeck**, con altu
 ### 📉 4. Análisis Estadístico
 Histogramas, correlaciones, regresiones y pruebas de hipótesis aplicadas a variables financieras y de sostenibilidad. Incluye filtrado por país o sector.
 
-### 🙋‍♀️ 5. Sobre mí
-Sección personal con información profesional, fotografía y enlace a LinkedIn.
+## 🚀 NUEVAS FUNCIONALIDADES
 
 ### 🎯 6. Simulador de Inversión Ética
 Elige tus preferencias (ESG vs. finanzas, sector, riesgo) y recibe un portafolio personalizado de 3 empresas recomendadas.
@@ -38,7 +37,8 @@ Haz preguntas como “mejor empresa alemana en ESG” y recibe una tabla filtrad
 ### 🌍 10. Comparativa con otros Índices
 Compara EURO STOXX 50 con IBEX 35 y S&P 500 en indicadores clave financieros y de sostenibilidad.
 
----
+### 🙋‍♀️ 10. Sobre mí
+Sección personal con información profesional, fotografía y enlace a LinkedIn.
 
 ---
 
@@ -64,21 +64,20 @@ Compara EURO STOXX 50 con IBEX 35 y S&P 500 en indicadores clave financieros y d
 │   ├── evolve_logo.png
 │   └── valen.png
 ├── pages/
-│ ├── 1_📊_Top_5_Acciones.py
-│ ├── 2_📈_Comparativa_Index.py
-│ ├── 3_🗺️_Mapa_Europeo.py
-│ ├── 4_📉_Análisis_Estadístico.py
-│ ├── 5_🙋‍♀️_Sobre_mí.py
-│ ├── 6_🎯_Simulador_Ético.py
-│ ├── 7_📊_Dashboard_KPIs.py
-│ ├── 8_📈_Ranking_ESG_Historico.py
-│ ├── 9_🤖_Consulta_Empresas.py
-│ └── 10_🌍_Comparativa_Índices.py
+│   ├── 1_📊_Top_5_Acciones.py
+│   ├── 2_📈_Comparativa_Index.py
+│   ├── 3_🗺️_Mapa_Europeo.py
+│   ├── 4_📉_Análisis_Estadístico.py
+│   ├── 5_🙋‍♀️_Sobre_mí.py
+│   ├── 6_🎯_Simulador_Ético.py
+│   ├── 7_📊_Dashboard_KPIs.py
+│   ├── 8_📈_Ranking_ESG_Historico.py
+│   ├── 9_🤖_Consulta_Empresas.py
+│   └── 10_🌍_Comparativa_Índices.py
 ├── main.py
 ├── requirements.txt
 ├── .gitignore
 └── README.md
-```
 
 ---
 
