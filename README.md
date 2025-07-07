@@ -84,8 +84,6 @@ streamlit run main.py
 
 🔗 *Próximamente disponible en Streamlit Cloud*
 
-> Cuando esté en funcionamiento, aquí aparecerá el enlace directo a la app desplegada.
-
 ---
 
 ## 👩‍💻 Autora
