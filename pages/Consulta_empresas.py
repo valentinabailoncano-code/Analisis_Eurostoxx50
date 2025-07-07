@@ -1,77 +1,59 @@
-# 9_🤖_Consulta_Empresas.py
+# 9_🤖_Consulta_RACE_IM.py
 import streamlit as st
 import pandas as pd
 
 st.set_page_config(layout="wide")
-
-st.title("🤖 Consulta rápida de empresas")
+st.title("🤖 Consulta rápida sobre RACE IM")
 
 st.markdown("""
-Haz preguntas simples sobre las empresas del EURO STOXX 50. El sistema interpreta tu consulta y filtra automáticamente los resultados más relevantes.
+Haz preguntas simples sobre la empresa **RACE IM** del EURO STOXX 50.  
+El sistema interpreta tu consulta y muestra automáticamente las métricas relevantes.
 
-**Ejemplos**:
-- "Empresa con mejor puntuación ESG"
-- "Mejor empresa alemana en rentabilidad"
-- "Top 3 empresas de salud con baja deuda"
+**Ejemplos:**
+- "¿Cuál es el ROE más alto?"
+- "Muestra los años con mejor ESG"
+- "¿Cuándo fue menor la valoración?"
 """)
 
 # Cargar datos
 @st.cache_data
 def load_data():
-    return pd.read_excel("data/Datos_STOXX50_.xlsx")
+    df = pd.read_excel("data/Datos_STOXX50_.xlsx", sheet_name="Financiero")
+    df["Fecha"] = pd.to_datetime(df["Dates"], errors='coerce')
+    df.dropna(subset=["Fecha"], inplace=True)
+    df["Año"] = df["Fecha"].dt.year
+    return df
 
 df = load_data()
 
-# Entrada de usuario
-consulta = st.text_input("Escribe tu pregunta o consulta:")
+# Crear columna con promedio ESG simulado
+df["ESG"] = df[["RACE IM  .10", "RACE IM  .13"]].mean(axis=1)
+
+# Diccionario de alias por variable
+alias = {
+    "roe": "RACE IM  .6",
+    "roi": "RACE IM  .7",
+    "dividendos": "RACE IM  .4",
+    "valoración": "RACE IM  ",
+    "esg": "ESG"
+}
+
+consulta = st.text_input("Escribe tu consulta sobre RACE IM:")
 
 if consulta:
     consulta = consulta.lower()
-    resultado = df.copy()
+    columna_detectada = None
 
-    # Filtrar por país (soporte flexible)
-    for pais in df["País"].dropna().unique():
-        if pais.lower() in consulta:
-            resultado = resultado[resultado["País"].str.lower() == pais.lower()]
+    for clave, col in alias.items():
+        if clave in consulta:
+            columna_detectada = col
+            break
 
-    # Filtrar por sector
-    for sector in df["Sector"].dropna().unique():
-        if sector.lower() in consulta:
-            resultado = resultado[resultado["Sector"].str.lower() == sector.lower()]
-
-    # Filtros por indicadores clave
-    if "mejor" in consulta and "esg" in consulta:
-        resultado = resultado.sort_values("ESG", ascending=False).head(5)
-
-    elif "mejor" in consulta and "rentabilidad" in consulta:
-        resultado = resultado.sort_values("Rentabilidad", ascending=False).head(5)
-
-    elif "baja deuda" in consulta or "menos deuda" in consulta or "apalancamiento" in consulta:
-        resultado = resultado.sort_values("Apalancamiento", ascending=True).head(5)
-
-    elif "crecimiento" in consulta:
-        resultado = resultado.sort_values("Crecimiento", ascending=False).head(5)
-
-    elif "valoración" in consulta or "p/e" in consulta:
-        resultado = resultado.sort_values("Valoración", ascending=True).head(5)
-
-    elif "top" in consulta:
-        # Detectar un número (top 3, top 5)
-        import re
-        match = re.search(r"top\s*(\d+)", consulta)
-        if match:
-            n = int(match.group(1))
-            resultado = resultado.sort_values("ESG", ascending=False).head(n)
-
-    # Mostrar resultado
-    if not resultado.empty:
-        st.success("Resultado para tu consulta:")
-        st.dataframe(
-            resultado[
-                ["Nombre", "País", "Sector", "E", "S", "G", "Crecimiento", "Rentabilidad", "Valoración", "Apalancamiento"]
-            ].round(2),
-            use_container_width=True
-        )
+    if columna_detectada and columna_detectada in df.columns:
+        orden = "menor" in consulta or "bajo" in consulta or "mínimo" in consulta
+        top = df[["Año", columna_detectada]].dropna().sort_values(columna_detectada, ascending=orden).head(5)
+        st.success(f"Top valores para '{clave.upper()}'")
+        st.dataframe(top.rename(columns={columna_detectada: clave.upper()}).reset_index(drop=True))
     else:
-        st.warning("No se encontraron resultados. Intenta reformular tu consulta.")
+        st.warning("No se pudo interpretar tu consulta. Prueba con palabras como 'ROE', 'ESG', 'dividendos', 'valoración', etc.")
 
