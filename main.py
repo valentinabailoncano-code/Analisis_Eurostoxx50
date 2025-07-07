@@ -14,7 +14,7 @@ logo = Image.open("images/evolve_logo.png")
 st.image(logo, width=200)
 
 # Título principal del proyecto
-st.title("Análisis Integral del EURO STOXX 50")
+st.title("📈 Análisis Integral del EURO STOXX 50")
 
 # Descripción general del proyecto y contexto
 st.markdown("""
